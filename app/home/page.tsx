@@ -5,8 +5,10 @@ import { useMeetings } from './hooks/useMeetings'
 import { useRouter } from 'next/navigation'
 import PastMeetings from './components/PastMeetings'
 import UpcomingMeetings from './components/UpcomingMeetings'
+import { useOrganization } from '@clerk/nextjs'
 
 function Home() {
+    const { organization } = useOrganization()
 
     const {
         userId,
@@ -24,7 +26,7 @@ function Home() {
         directOAuth,
         getAttendeeList,
         getInitials
-    } = useMeetings()
+    } = useMeetings(organization?.id)
 
     const router = useRouter()
     const handleMeetingClick = (meetingId: string) => {

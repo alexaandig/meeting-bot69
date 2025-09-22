@@ -1,14 +1,38 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)', '/forum(.*)'])
+const isProtectedRoute = createRouteMatcher([
+    '/',
+    '/home(.*)',
+    '/meeting(.*)',
+    '/integrations(.*)',
+    '/chat(.*)',
+    '/settings(.*)',
+    '/workspace(.*)',
+])
 
-export default clerkMiddleware(async (auth, req) => {
-    const { userId, redirectToSignIn } = await auth()
+const isPublicRoute = createRouteMatcher([
+    '/sign-in(.*)',
+    '/sign-up(.*)',
+    '/select-org(.*)',
+    '/api/webhooks/clerk',
+    '/api/webhooks/stripe',
+])
+
+export default clerkMiddleware((auth, req) => {
+    if (isPublicRoute(req)) {
+        return NextResponse.next()
+    }
+
+    const { userId, orgId, sessionClaims } = auth()
 
     if (!userId && isProtectedRoute(req)) {
-        // Add custom logic to run before redirecting
+        return auth().redirectToSignIn()
+    }
 
-        return redirectToSignIn()
+    if (userId && !orgId && req.nextUrl.pathname !== '/select-org') {
+        const selectOrgUrl = new URL('/select-org', req.url)
+        return NextResponse.redirect(selectOrgUrl)
     }
 })
 
