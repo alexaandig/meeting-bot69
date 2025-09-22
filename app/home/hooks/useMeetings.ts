@@ -29,7 +29,7 @@ export interface PastMeeting {
     speakers?: any
 }
 
-export function useMeetings() {
+export function useMeetings(organizationId?: string) {
     const { userId } = useAuth()
     const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([])
     const [pastMeetings, setPastMeetings] = useState<PastMeeting[]>([])
@@ -42,11 +42,11 @@ export function useMeetings() {
 
 
     useEffect(() => {
-        if (userId) {
+        if (userId && organizationId) {
             fetchUpcomingEvents()
             fetchPastMeetings()
         }
-    }, [userId])
+    }, [userId, organizationId])
 
     const fetchUpcomingEvents = async () => {
         setLoading(true)
@@ -99,7 +99,7 @@ export function useMeetings() {
 
         setPastLoading(true)
         try {
-            const response = await fetch('/api/meetings/past')
+            const response = await fetch(`/api/meetings/past?orgId=${organizationId}`)
             const result = await response.json()
 
             if (!response.ok) {

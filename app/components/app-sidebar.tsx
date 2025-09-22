@@ -1,3 +1,4 @@
+import { OrganizationSwitcher } from "@clerk/nextjs";
 import { Bot, DollarSign, Home, Layers3, Settings } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useUsage } from "../contexts/UsageContext";
@@ -31,6 +32,11 @@ const items = [
         url: "/pricing",
         icon: DollarSign,
     },
+    {
+        title: "Workspace",
+        url: "/workspace",
+        icon: Settings,
+    }
 ]
 
 export function AppSidebar() {
@@ -90,14 +96,7 @@ export function AppSidebar() {
     return (
         <Sidebar collapsible="none" className="border-r border-sidebar-border h-screen">
             <SidebarHeader className="border-b border-sidebar-border p-4">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground">
-                        <Bot className="w-4 h-4" />
-                    </div>
-                    <span className="text-lg font-semibold text-sidebar-foreground">
-                        MeetingBot
-                    </span>
-                </div>
+                <OrganizationSwitcher hidePersonal={true} />
             </SidebarHeader>
 
             <SidebarContent className="flex-1 p-4">

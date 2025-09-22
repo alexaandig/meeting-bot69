@@ -1,15 +1,14 @@
 import { prisma } from "@/lib/db";
 import { auth } from "@clerk/nextjs/server";
-import { error } from "console";
-import { NextResponse } from "next/server";
-import { connected } from "process";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
     try {
-        const { userId } = await auth()
+        const { userId, orgId } = await auth()
         if (!userId) {
             return NextResponse.json({ error: "not authed" }, { status: 401 })
         }
+
         const user = await prisma.user.findUnique({
             where: {
                 clerkId: userId
@@ -20,11 +19,27 @@ export async function GET() {
             return NextResponse.json({ error: "user not found" }, { status: 404 })
         }
 
+        const { searchParams } = new URL(request.url)
+        const workspaceId = searchParams.get('orgId')
+
+        const whereClause: any = {
+            userId: user.id,
+            meetingEnded: true
+        }
+
+        if (workspaceId) {
+            const workspace = await prisma.workspace.findUnique({
+                where: {
+                    clerkOrgId: workspaceId
+                }
+            })
+            if (workspace) {
+                whereClause.workspaceId = workspace.id
+            }
+        }
+
         const pastMeetings = await prisma.meeting.findMany({
-            where: {
-                userId: user.id,
-                meetingEnded: true
-            },
+            where: whereClause,
             orderBy: {
                 endTime: 'desc'
             },
