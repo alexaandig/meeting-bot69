@@ -29,6 +29,13 @@ export interface PastMeeting {
     speakers?: any
 }
 
+export interface MeetingFilters {
+    searchTerm?: string
+    startDate?: string
+    endDate?: string
+    duration?: string
+}
+
 export function useMeetings(organizationId?: string) {
     const { userId } = useAuth()
     const [upcomingEvents, setUpcomingEvents] = useState<CalendarEvent[]>([])
@@ -95,11 +102,29 @@ export function useMeetings(organizationId?: string) {
 
     }
 
-    const fetchPastMeetings = async () => {
+    const fetchPastMeetings = async (filters: MeetingFilters = {}) => {
 
         setPastLoading(true)
         try {
-            const response = await fetch(`/api/meetings/past?orgId=${organizationId}`)
+            const params = new URLSearchParams({
+                orgId: organizationId || '',
+            })
+
+            if (filters.searchTerm) {
+                params.append('search', filters.searchTerm)
+            }
+            if (filters.startDate) {
+                params.append('startDate', filters.startDate)
+            }
+            if (filters.endDate) {
+                params.append('endDate', filters.endDate)
+            }
+            if (filters.duration) {
+                params.append('duration', filters.duration)
+            }
+
+
+            const response = await fetch(`/api/meetings/past?${params.toString()}`)
             const result = await response.json()
 
             if (!response.ok) {
