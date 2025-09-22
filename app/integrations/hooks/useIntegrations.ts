@@ -2,7 +2,7 @@ import { useAuth } from "@clerk/nextjs"
 import { useEffect, useState } from "react"
 
 export interface Integration {
-    platform: 'google-calendar' | 'trello' | 'jira' | 'asana' | 'slack'
+    platform: 'google-calendar' | 'trello' | 'jira' | 'asana' | 'slack' | 'notion'
     name: string
     description: string
     connected: boolean
@@ -45,6 +45,13 @@ export function useIntegrations() {
             logo: '/asana.png'
         },
         {
+            platform: 'notion',
+            name: 'Notion',
+            description: 'Create pages for your meeting notes and tasks',
+            connected: false,
+            logo: '/notion.png'
+        },
+        {
             platform: 'google-calendar',
             name: 'Google Calendar',
             description: 'Auto-Sync meetings',
@@ -65,7 +72,7 @@ export function useIntegrations() {
 
         const urlParams = new URLSearchParams(window.location.search)
         const setup = urlParams.get('setup')
-        if (setup && ['trello', 'jira', 'asana', 'slack'].includes(setup)) {
+        if (setup && ['trello', 'jira', 'asana', 'slack', 'notion'].includes(setup)) {
             setSetupMode(setup)
             fetchSetupData(setup)
         }
