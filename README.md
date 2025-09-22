@@ -18,10 +18,10 @@ PS: Youtube only allows videos of max duration of 12 hours. But since my video i
     - [ ] Participant based filtering
 - [ ] 100+ languages transcript translation (similar to what fireflies.ai does) (Users will be able to view their transcripts in over 100 languages. They can go to a dropdown menu and change their transcript language) - use Google Cloud Translation API
 
-- [ ] Workspaces Creation
-    - [ ] Users can create a workspace
-    - [ ] Users can invite other people to their workspace
-    - [ ] Role based access
+- [x] Workspaces Creation
+    - [x] Users can create a workspace
+    - [x] Users can invite other people to their workspace
+    - [x] Role based access
 
 
 ## Contributing
