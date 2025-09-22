@@ -1,27 +1,32 @@
-import { PrismaClient } from "@prisma/client"
+import { PrismaClient } from 'https://esm.sh/@prisma/client'
+import { serve } from 'https://deno.land/std@0.131.0/http/server.ts'
+import { corsHeaders } from '../_shared/cors.ts'
 
 const prisma = new PrismaClient()
 
-export const handler = async (event) => {
-    try {
-        await syncAllUserCalendars()
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
 
-        await scheduleBotsForUpcomingMeetings()
+  try {
+    await syncAllUserCalendars()
+    await scheduleBotsForUpcomingMeetings()
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({ message: 'success' })
-        }
-    } catch (error) {
-        console.error('error:', error)
-        return {
-            statusCode: 500,
-            body: JSON.stringify({ error: 'internal server error', details: error.message })
-        }
-    } finally {
-        await prisma.$disconnect()
-    }
-}
+    return new Response(JSON.stringify({ message: 'success' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
+  } catch (error) {
+    console.error('error:', error)
+    return new Response(JSON.stringify({ error: 'internal server error', details: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 500,
+    })
+  } finally {
+    await prisma.$disconnect()
+  }
+})
 
 async function syncAllUserCalendars() {
     const users = await prisma.user.findMany({
@@ -150,8 +155,8 @@ async function refreshGoogleToken(user) {
                 'Content-Type': 'application/x-www-form-urlencoded'
             },
             body: new URLSearchParams({
-                client_id: process.env.GOOGLE_CLIENT_ID,
-                client_secret: process.env.GOOGLE_CLIENT_SECRET,
+                client_id: Deno.env.get("GOOGLE_CLIENT_ID"),
+                client_secret: Deno.env.get("GOOGLE_CLIENT_SECRET"),
                 refresh_token: user.googleRefreshToken,
                 grant_type: 'refresh_token'
             })
@@ -213,7 +218,7 @@ async function handleDeletedEvent(event) {
     }
 }
 
-async function handleDeletedEventFromDB(dbEvent) {
+async function handleDeletedEventFromDB(user, dbEvent) {
     await prisma.meeting.delete({
         where: {
             id: dbEvent.id
@@ -326,7 +331,7 @@ async function scheduleBotsForUpcomingMeetings() {
                 reserved: false,
                 recording_mode: 'speaker_view',
                 speech_to_text: { provider: "Default" },
-                webhook_url: process.env.WEBHOOK_URL,
+                webhook_url: Deno.env.get("WEBHOOK_URL"),
                 extra: {
                     meeting_id: meeting.id,
                     user_id: meeting.userId
@@ -341,7 +346,7 @@ async function scheduleBotsForUpcomingMeetings() {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'x-meeting-baas-api-key': process.env.MEETING_BAAS_API_KEY
+                    'x-meeting-baas-api-key': Deno.env.get("MEETING_BAAS_API_KEY")
                 },
                 body: JSON.stringify(requestBody)
             })

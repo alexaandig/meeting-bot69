@@ -1,6 +1,6 @@
 import { prisma } from "./db";
 import { chatWithAI, createEmbedding, createManyEmbeddings } from "./gemini";
-import { saveManyVectors, searchVectors } from "./pinecone";
+import { saveManyVectors, searchVectors } from "./supabase";
 import { chunkTranscript, extractSpeaker } from "./text-chunker";
 
 export async function processTranscript(
@@ -15,30 +15,17 @@ export async function processTranscript(
 
     const embeddings = await createManyEmbeddings(texts)
 
-    const dbChunks = chunks.map((chunk) => ({
-        meetingId,
-        chunkIndex: chunk.chunkIndex,
-        content: chunk.content,
-        speakerName: extractSpeaker(chunk.content),
-        vectorId: `${meetingId}_chunk_${chunk.chunkIndex}`
-    }))
-
-    await prisma.transcriptChunk.createMany({
-        data: dbChunks,
-        skipDuplicates: true
-    })
 
     const vectors = chunks.map((chunk, index) => ({
         id: `${meetingId}_chunk_${chunk.chunkIndex}`,
         embedding: embeddings[index],
+        content: chunk.content,
         metadata: {
             meetingId,
             userId,
             chunkIndex: chunk.chunkIndex,
-            content: chunk.content,
             speakerName: extractSpeaker(chunk.content),
             meetingTitle: meetingTitle || 'Untitled Meeting'
-
         }
     }))
 
