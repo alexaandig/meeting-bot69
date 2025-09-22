@@ -55,6 +55,7 @@ function Home() {
                         onMeetingClick={handleMeetingClick}
                         getAttendeeList={getAttendeeList}
                         getInitials={getInitials}
+                        onSearch={fetchPastMeetings}
                     />
                 </div>
                 <div className='w-px bg-border'></div>
