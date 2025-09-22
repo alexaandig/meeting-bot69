@@ -58,6 +58,7 @@ function IntegrationCard({
                         {integration.platform === 'trello' && integration.boardName}
                         {integration.platform === 'jira' && integration.projectName}
                         {integration.platform === 'asana' && integration.projectName}
+                        {integration.platform === 'notion' && integration.boardName}
                     </div>
                 </div>
             )}
